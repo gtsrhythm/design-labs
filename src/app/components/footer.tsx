@@ -1,4 +1,4 @@
-import { Mail, Twitter, Github } from "lucide-react";
+import { Mail, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Footer() {
