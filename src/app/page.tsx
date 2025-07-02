@@ -104,7 +104,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex justify-center">
-            
+            {/* third column, add image */}
           </div>
         </div>
       </section>
