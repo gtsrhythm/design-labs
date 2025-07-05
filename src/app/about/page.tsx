@@ -79,7 +79,7 @@ export default function About() {
                 
                 <div className="space-y-6">
                   <p className={`${quicksand.className} about-text text-lg sm:text-xl text-gray-600 leading-relaxed`}>
-                    At Design Labs, we believe that great design is more than just aesthetics—it&aposs about creating meaningful connections between brands and their audiences.
+                    At Design Labs, we believe that great design is more than just aesthetics—it&apos;s about creating meaningful connections between brands and their audiences.
                   </p>
                   
                   <p className={`${quicksand.className} about-text text-lg text-gray-600 leading-relaxed`}>
@@ -87,7 +87,7 @@ export default function About() {
                   </p>
                   
                   <p className={`${quicksand.className} about-text text-lg text-gray-600 leading-relaxed`}>
-                    We work with forward-thinking companies who understand that in today&aposs digital landscape, your website is often the first impression you make. Let&aposs make it unforgettable.
+                    We work with forward-thinking companies who understand that in today&apos;s digital landscape, your website is often the first impression you make. Let&apos;s make it unforgettable.
                   </p>
                 </div>
 

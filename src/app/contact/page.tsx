@@ -6,7 +6,7 @@ import { Old_Standard_TT, Quicksand } from 'next/font/google';
 import { useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Send } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const oldStandardTT = Old_Standard_TT({ subsets: ['latin'], weight: ['400'] });
@@ -19,6 +19,14 @@ export default function Contact() {
     name: '',
     email: '',
     company: '',
+    message: ''
+  });
+
+  const [formStatus, setFormStatus] = useState<{
+    type: 'idle' | 'loading' | 'success' | 'error';
+    message: string;
+  }>({
+    type: 'idle',
     message: ''
   });
 
@@ -68,10 +76,58 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
+    
+    // Reset form status
+    setFormStatus({ type: 'loading', message: 'Sending your message...' });
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
+
+      // Success
+      setFormStatus({
+        type: 'success',
+        message: 'Thank you! Your message has been sent successfully. We\'ll get back to you within 24 hours.'
+      });
+
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        company: '',
+        message: ''
+      });
+
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        setFormStatus({ type: 'idle', message: '' });
+      }, 5000);
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setFormStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to send message. Please try again.'
+      });
+
+      // Auto-hide error message after 5 seconds
+      setTimeout(() => {
+        setFormStatus({ type: 'idle', message: '' });
+      }, 5000);
+    }
   };
 
   return (
@@ -85,7 +141,7 @@ export default function Contact() {
               Let&apos;s Create Something Beautiful Together
             </h1>
             <p className={`${quicksand.className} contact-header text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed`}>
-              Ready to transform your digital presence? We&aposd love to hear about your project and explore how we can bring your vision to life.
+              Ready to transform your digital presence? We&apos;d love to hear about your project and explore how we can bring your vision to life.
             </p>
           </div>
         </section>
@@ -112,10 +168,29 @@ export default function Contact() {
                     Start Your Project
                   </h2>
                   <p className={`${quicksand.className} text-gray-600 mb-8`}>
-                    Tell us about your vision and we&aposll get back to you within 24 hours.
+                    Tell us about your vision and we&apos;ll get back to you within 24 hours.
                   </p>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Status Message */}
+                    {formStatus.type !== 'idle' && (
+                      <div className={`p-4 rounded-lg border ${
+                        formStatus.type === 'success' 
+                          ? 'bg-green-50 border-green-200 text-green-800' 
+                          : formStatus.type === 'error'
+                          ? 'bg-red-50 border-red-200 text-red-800'
+                          : 'bg-blue-50 border-blue-200 text-blue-800'
+                      }`}>
+                        <div className="flex items-start space-x-3">
+                          {formStatus.type === 'success' && <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                          {formStatus.type === 'error' && <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                          {formStatus.type === 'loading' && <Loader2 className="w-5 h-5 flex-shrink-0 mt-0.5 animate-spin" />}
+                          <p className={`${quicksand.className} text-sm leading-relaxed`}>
+                            {formStatus.message}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
                         <label className={`${quicksand.className} block text-sm font-medium text-gray-700 mb-2`}>
@@ -178,10 +253,20 @@ export default function Contact() {
 
                     <Button
                       type="submit"
-                      className={`${quicksand.className} w-full py-4 bg-gray-800 hover:bg-gray-900 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2`}
+                      disabled={formStatus.type === 'loading'}
+                      className={`${quicksand.className} w-full py-4 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2`}
                     >
-                      <span>Send Message</span>
-                      <Send className="w-4 h-4" />
+                      {formStatus.type === 'loading' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Send Message</span>
+                          <Send className="w-4 h-4" />
+                        </>
+                      )}
                     </Button>
 
                     <p className={`${quicksand.className} text-xs text-gray-500 text-center mt-4`}>

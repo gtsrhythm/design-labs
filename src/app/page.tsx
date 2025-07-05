@@ -3,7 +3,7 @@
 import { Notable } from 'next/font/google';
 import { Quicksand } from 'next/font/google';
 import { Old_Standard_TT } from 'next/font/google';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown, ArrowRight, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/app/components/navbar';
@@ -11,6 +11,7 @@ import Footer from '@/app/components/footer';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 const notable = Notable({ subsets: ['latin'], weight: ['400'] });
 const quicksand = Quicksand({ subsets: ['latin'], weight: ['400'] });
@@ -20,8 +21,20 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const pathname = usePathname();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    // Wait for component to mount and render
+    const readyTimer = setTimeout(() => {
+      setIsReady(true);
+    }, 200);
+
+    return () => clearTimeout(readyTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+
     // Clear any existing animations
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     gsap.killTweensOf(['.design', '.labs', '.scroll-indicator']);
@@ -32,16 +45,21 @@ export default function Home() {
     gsap.set('.labs', { clearProps: "all" });
     gsap.set('.scroll-indicator', { clearProps: "all" });
     
-    // Use a short timeout to ensure DOM is ready after navigation
+    // Wait for DOM to be fully rendered
     const animTimeout = setTimeout(() => {
+      // Check if elements exist
+      const designEl = document.querySelector('.design');
+      const labsEl = document.querySelector('.labs');
+      if (!designEl || !labsEl) return;
+
       const heroTl = gsap.timeline({
         defaults: { ease: 'power4.out', duration: 1.2 },
       });
 
       heroTl
-        .from('.design', { opacity: 0, y: -80, skewX: '-10deg', delay: 0.2 })
-        .from('.labs', { opacity: 0, y: 80, skewX: '10deg' }, '-=1')
-        .from('.scroll-indicator', { opacity: 0, y: 20, ease: 'sine.out' }, '-=0.5');
+        .from('.design', { y: -80, skewX: '-10deg', delay: 0.2 })
+        .from('.labs', { y: 80, skewX: '10deg' }, '-=1')
+        .from('.scroll-indicator', { y: 20, ease: 'sine.out' }, '-=0.5');
   
       const detailsSection = document.querySelector('.details-section');
       if (detailsSection) {
@@ -51,14 +69,13 @@ export default function Home() {
             start: 'top 80%',
             toggleActions: 'play none none reverse',
           },
-          opacity: 0,
           y: 40,
           stagger: 0.15,
           ease: 'power3.out',
           duration: 0.8,
         });
       }
-    }, 100); // Small delay for reliability
+    }, 500); // Longer delay to ensure DOM is ready
 
     return () => {
       // Clean up any animations and timers
@@ -67,7 +84,7 @@ export default function Home() {
       gsap.killTweensOf(['.design', '.labs', '.scroll-indicator']);
       gsap.killTweensOf('.details-section h2, .details-section p, .details-section button');
     };
-  }, [pathname]);
+  }, [isReady, pathname]);
 
   return (
     <>
@@ -93,14 +110,18 @@ export default function Home() {
               Design Labs helps forward-thinking brands build memorable web experiences that drive growth and engagement.
             </p>
             <div className="flex space-x-4">
-              <Button variant="ghost" className="px-4 py-2 text-gray-800 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center space-x-2">
-                <span>Get In Touch</span>
-                <Mail className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" className="px-4 py-2 text-gray-800 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center space-x-2">
-                <span>View Work</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
+              <Link href="/contact">
+                <Button variant="ghost" className="px-4 py-2 text-gray-800 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center space-x-2">
+                  <span>Get In Touch</span>
+                  <Mail className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="/work">
+                <Button variant="ghost" className="px-4 py-2 text-gray-800 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center space-x-2">
+                  <span>View Work</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="flex justify-center">
